@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>세균 매치 게임</title>
+<style>
+  body {
+    margin: 0;
+    background: #111;
+    font-family: sans-serif;
+    color: white;
+    text-align: center;
+  }
+
+  h1 {
+    margin: 10px;
+  }
+
+  #score {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+
+  #board {
+    width: 300px;
+    height: 500px;
+    margin: auto;
+    background: #222;
+    display: grid;
+    grid-template-columns: repeat(6, 50px);
+    grid-template-rows: repeat(10, 50px);
+    gap: 2px;
+    position: relative;
+  }
+
+  .cell {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+</style>
+</head>
+
+<body>
+
+<h1>🧫 세균 컬러 매치 게임</h1>
+<div id="score">점수: 0</div>
+
+<div id="board"></div>
+
+<script>
+const board = document.getElementById("board");
+const rows = 10;
+const cols = 6;
+
+let score = 0;
+
+// 색상 종류 (세균 종류)
+const colors = ["red", "green", "blue", "yellow", "purple"];
+
+// 2D 배열 생성
+let grid = Array.from({ length: rows }, () => Array(cols).fill(null));
+
+// 보드 생성
+for (let i = 0; i < rows * cols; i++) {
+    const div = document.createElement("div");
+    div.className = "cell";
+    board.appendChild(div);
+}
+
+// 랜덤 세균 생성
+function dropBacteria() {
+    let col = Math.floor(Math.random() * cols);
+    let color = colors[Math.floor(Math.random() * colors.length)];
+
+    // 아래부터 쌓기
+    for (let r = rows - 1; r >= 0; r--) {
+        if (!grid[r][col]) {
+            grid[r][col] = color;
+            break;
+        }
+    }
+
+    render();
+    checkMatch();
+}
+
+// 화면 렌더링
+function render() {
+    const cells = document.querySelectorAll(".cell");
+    let i = 0;
+
+    for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+            cells[i].style.background = grid[r][c] || "#333";
+            i++;
+        }
+    }
+}
+
+// 3개 이상 같은 색 제거 (가로 체크)
+function checkMatch() {
+    let removed = false;
+
+    for (let r = 0; r < rows; r++) {
+        let count = 1;
+
+        for (let c = 1; c < cols; c++) {
+            if (grid[r][c] && grid[r][c] === grid[r][c - 1]) {
+                count++;
+            } else {
+                if (count >= 3) {
+                    for (let k = 1; k <= count; k++) {
+                        grid[r][c - k] = null;
+                    }
+                    score += count * 10;
+                    removed = true;
+                }
+                count = 1;
+            }
+        }
+
+        if (count >= 3) {
+            for (let k = 0; k < count; k++) {
+                grid[r][cols - 1 - k] = null;
+            }
+            score += count * 10;
+            removed = true;
+        }
+    }
+
+    if (removed) {
+        document.getElementById("score").innerText = "점수: " + score;
+        render();
+    }
+}
+
+// 자동 떨어짐
+setInterval(dropBacteria, 800);
+</script>
+
+</body>
+</html>
